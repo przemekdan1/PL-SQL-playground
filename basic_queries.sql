@@ -1,3 +1,6 @@
+/*
+Wyświetl imię i nazwisko czytelnika (jedna kolumna – DANE CZYTELNIKA) oraz liczbę gatunków pożyczanych przez niego książek. Wyniki posortuj malejąco.
+*/
 SELECT czytelnik.imie || ' ' || czytelnik.nazwisko AS "DANE CZYTELNIKA", COUNT(ksiazka.id_gat) AS "LICZBA GATUNKOW"  
 FROM czytelnik
 JOIN wypozyczenia ON czytelnik.id_czyt = wypozyczenia.id_czyt
@@ -5,8 +8,9 @@ JOIN ksiazka ON ksiazka.id_ks = wypozyczenia.id_ks
 GROUP BY czytelnik.imie, czytelnik.nazwisko
 ORDER BY "LICZBA GATUNKOW" DESC
 
-
-
+/*
+Wyświetl liczbę książek wydanych przez to wydawnictwo, które wydało najstarszą książkę.
+*/
 SELECT COUNT(wydawnictwo.w_nazwa) AS "LICZBA WYDANYCH KSIAZEK" FROM wydawnictwo
 JOIN ksiazka ON ksiazka.id_wyd=wydawnictwo.id_wyd
 WHERE wydawnictwo.id_wyd = (
@@ -17,7 +21,9 @@ WHERE wydawnictwo.id_wyd = (
 
 
 
-
+/*
+Wyświetl format książki, który był najczęściej pożyczany w ciągu ostatnich 3 miesięcy.
+*/
 SELECT format.f_nazwa,COUNT(ksiazka.tytul) AS "Liczba wypozyczen" FROM ksiazka
 JOIN format USING(id_for)
 JOIN wypozyczenia USING(id_ks)
@@ -28,14 +34,18 @@ FETCH FIRST ROW ONLY
 
 
 
-
+/*
+Wyświetl liczbę książek każdego rodzaju oraz sumaryczną cenę dla każdej grupy.
+*/
 SELECT gatunek.g_nazwa, COUNT(ksiazka.tytul), SUM(ksiazka.cena) FROM ksiazka
 JOIN gatunek USING(id_gat)
 GROUP BY gatunek.g_nazwa
 
 
 
-
+/*
+Wyświetl nazwę gatunku, który był częściej pożyczany niż średnia liczba pożyczonych książek wszystkich gatunków.
+*/
 SELECT gatunek.g_nazwa,COUNT(id_wyp) FROM wypozyczenia
 JOIN ksiazka ON ksiazka.id_ks=wypozyczenia.id_ks
 JOIN gatunek ON gatunek.id_gat=ksiazka.id_gat
@@ -46,6 +56,10 @@ HAVING COUNT(id_wyp) > (
     GROUP BY id_gat
 )
 
+
+/*
+Wyświetl wszystkie dane o autorze, który napisał książki tego samego typu, co najcieńsza książka.
+*/
 SELECT * FROM autor
 JOIN autor_tytul ON autor.id_aut=autor_tytul.id_aut
 JOIN ksiazka ON ksiazka.id_ks=autor_tytul.id_ks
