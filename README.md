@@ -89,3 +89,11 @@ JOIN rozprawa ON pracownicy.id_prac = rozprawa.id_prac
 JOIN specjalnosc ON pracownicy.id_spec = specjalnosc.id_spec
 GROUP BY nazwa
 ```
+
+### Where
+
+**You always use it before GROUP BY**
+
+### Having
+
+**You always use it after GROUP BY or aggregation functions**
