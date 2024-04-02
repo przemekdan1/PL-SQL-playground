@@ -76,3 +76,16 @@ WHERE EXISTS (SELECT * FROM purchases WHERE purchases.customer_id = customers.cu
 AND customer_name LIKE 'J%'
 AND NOT customer_name LIKE '%Test%';
 ```
+
+### Group by
+
+**You always have to connect group by with some aggregate functions**
+
+GROUP BY -> COUNT(), SUM(), AVG()
+
+```sql
+SELECT nazwa,COUNT(id_rozprawa) FROM pracownicy
+JOIN rozprawa ON pracownicy.id_prac = rozprawa.id_prac
+JOIN specjalnosc ON pracownicy.id_spec = specjalnosc.id_spec
+GROUP BY nazwa
+```
