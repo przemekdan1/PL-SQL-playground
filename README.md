@@ -46,3 +46,33 @@ CREATE INDEX idx_title ON Books(title);
 For data we want to insert into our table we can use:
 ```sql
 INSERT INTO name VALUES(a,b,..);
+```
+
+### Naming columns
+- aliases and space between words
+```sql
+SELECT imie || ' ' || nazwisko AS "dane klienta" FROM klienci;
+```
+
+### Filtering operators
+- ALL
+- BETWEEN
+- EXISTS
+- **LIKE**
+- NULL
+
+Retrieve all books with a number of pages greater than every other book's page count
+```sql
+SELECT * FROM books
+WHERE pages > ALL (SELECT pages FROM books)
+AND release_date BETWEEN '2020-01-01' AND '2022-12-31'
+AND author_id IS NOT NULL;
+```
+
+Retrieve all customers who have made a purchase in the past and whose name starts with 'J'
+```sql
+SELECT * FROM customers
+WHERE EXISTS (SELECT * FROM purchases WHERE purchases.customer_id = customers.customer_id)
+AND customer_name LIKE 'J%'
+AND NOT customer_name LIKE '%Test%';
+```
