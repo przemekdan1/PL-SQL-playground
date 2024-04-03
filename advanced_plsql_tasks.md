@@ -100,3 +100,41 @@ EXCEPTION
 
 
 
+## Program 3
+
+
+**Utwórz pakiet, który zawiera poniższą funkcję i procedurę: Napisz funkcję, która wyświetli liczbę rozpraw, które odbyły się w podanej jako parametr sali. Funkcja powinna zwrócić sumaryczną liczbę rozpraw. - 3 pkt. Napisz procedurę, której zadaniem jest wypisanie dla każdego pozwanego informacji o rozprawach, które go dotyczyły. Są to: nazwisko i imię pozwanego, nazwisko i imię pracownika oraz typ Pamiętaj o wywołaniu programów.**
+
+```sql
+CREATE OR REPLACE PROCEDURE informacje_pozwany IS
+    CURSOR informacje IS
+        SELECT pozwany.nazwisko,pozwany.imie,pracownicy.imie,typ_sprawy.nazwa FROM rozprawa
+        JOIN pozwany USING(id_poz)
+        JOIN pracownicy USING(id_prac)
+        JOIN typ_sprawy USING(id_typ);
+
+    TYPE dane IS RECORD(
+        v_nazwisko_poz pozwany.nazwisko%TYPE,
+        v_imie_poz pozwany.imie%TYPE,
+        v_imie_prac pracownicy.imie%TYPE,
+        v_typ_sprawy typ_sprawy.nazwa%TYPE
+    );
+    dane_pozwanego dane;
+BEGIN
+    OPEN informacje;
+    LOOP
+        FETCH informacje INTO dane_pozwanego;
+        EXIT WHEN informacje%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE(dane_pozwanego.v_nazwisko_poz || ' ' || dane_pozwanego.v_imie_poz || ' ' ||  dane_pozwanego.v_imie_prac || ' ' || dane_pozwanego.v_typ_sprawy);
+    END LOOP;
+    CLOSE informacje;
+END;
+
+
+EXECUTE informacje_pozwany;
+```
+
+### What was used:
+- cursor
+- record type
+- 

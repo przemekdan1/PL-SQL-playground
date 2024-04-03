@@ -181,13 +181,75 @@ GROUP BY nazwa
 
 ### Anonymous blocks
 
+every program that isn't storage in database
+```sql
+DECLARE
+    variables,cursors,record_type
+BEGIN
+    logic
+EXCEPTION
+    WHEN ... THEN
+END;
+```
+
 ### TYPE and ROWTYPE
+if you want your variable to have exact type as field in the table 
+
+```sql
+variable_name table.field_name%TYPE;
+```
 
 ### Record variable
 
+```sql
+TYPE record_type_name IS RECORD (
+    variable1 table.field1%TYPE,
+    variable2 table.field2%TYPE,
+    variable3 NUMBER(5)
+);
+reference_name record_type_name;
+```
+Usage:
+- fetching data from cursor
+- assiging with SELECT INTO
+
+
 ### If statement, case
 
+```sql
+    IF condition THEN
+        ...
+    ELSIF condition THEN
+        ...
+    ELSE
+        ...
+    END IF;
+```
+
 ### Loops
+
+#### LOOP
+
+```sql
+    LOOP
+        some actions;
+        EXIT WHEN condition;
+    END LOOP;
+```
+
+#### WHILE
+```sql
+    WHILE condition LOOP
+        actions;
+    END LOOP;
+```
+#### FOR
+```sql
+    FOR i IN  from..to_range LOOP
+        actions;
+    END LOOP;
+```
+
 
 
 
@@ -216,16 +278,133 @@ GROUP BY nazwa
 
 
 
-## Triggers
-
 
 ## Stored procedures
 
+Precompiled programs, which user can invoke at any time or can be invoke when event occur. Sheared with other users.
+
+Always add OR REPLACE for easier refactor.
+
+
+
 ### Procedures
+
+They do some specific tasks
+
+```sql
+CREATE OR REPLACE PROCEDURE procedure_name 
+[params] IS
+    declarations
+BEGIN
+    content
+END procedure_name
+```
+
+Then you have to invoke procedure in diffrent program or anonymous block
+
+```sql
+DECLARE
+BEGIN
+    procedure_name('param');
+END;
+```
+or
+```sql
+EXECUTE procedure_name('param');
+```
+
+Procedure that modifies price of books 
+
+```sql
+CREATE OR REPLACE PROCEDURE aktualizacja_ceny 
+
+    (p_nazwa_ksiazki ksiazka.tytul%TYPE) IS
+
+    v_cena_ksiazki ksiazka.cena%TYPE;
+
+BEGIN 
+
+    IF p_nazwa_ksiazki IS NOT NULL THEN
+
+        SELECT cena INTO v_cena_ksiazki FROM ksiazka
+
+        WHERE tytul = p_nazwa_ksiazki;
+
+        WHERE ksiazka.tytul = p_nazwa_ksiazki;
+
+        IF v_cena_ksiazki >= 25 THEN
+
+            UPDATE ksiazka SET cena = v_cena_ksiazki * 1.1
+
+        WHERE ksiazka.tytul = p_nazwa_ksiazki;
+
+        ELSE
+
+            UPDATE ksiazka SET cena = v_cena_ksiazki * 1.15;
+
+        END IF;
+
+    ELSE
+
+        DBMS_OUTPUT.PUT_LINE('Nie ma takiego tutułu');
+
+    END IF;
+
+END aktualizacja_ceny;
+
+
+
+
+
+DECLARE
+
+BEGIN
+
+    aktualizacja_ceny('PAN TADEUSZ');
+
+END;
+```
+
+
+
+
 
 ### Functions
 
+They do some calculation and return values 
+
+
+
 ### Packages
+
+They are some kind of libraries of procedures and function
+
+
+## Triggers
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
