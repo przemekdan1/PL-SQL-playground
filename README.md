@@ -13,10 +13,15 @@ In my training I used Oracle SQLdeveloper.
       </ul>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
+      <a href="#sql-basics">SQL basics</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#creating-table">Creating table</a></li>
+        <li><a href="#inserting-data">Inserting data</a></li>
+        <li><a href="#naming-columns">Naming columns</a></li>
+        <li><a href="#filtering-operators">Filtering operators</a></li>
+        <li><a href="#group-by">Group by</a></li>
+        <li><a href="#where">Where</a></li>
+        <li><a href="#basic_programs.md#program-1">Having</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -35,8 +40,12 @@ In my training I used Oracle SQLdeveloper.
 
 Short description: my database contain data that could be collected while working in library. You can search for details about specific book, it's autor, publishing house, history of borrowing book or readers.
 
+<p align="right">(<a href="#pl/sql-trainning">back to top</a>)</p>
+
 ### ERD diagram
 ![alt text](image.png)
+
+<p align="right">(<a href="#pl/sql-trainning">back to top</a>)</p>
 
 ## SQL basics
 
@@ -66,6 +75,7 @@ CREATE TABLE Books (
 -- Creating an index on the title column for faster data retrieval
 CREATE INDEX idx_title ON Books(title);
 ```
+<p align="right">(<a href="#pl/sql-trainning">back to top</a>)</p>
 
 ### Inserting data
 
@@ -73,12 +83,16 @@ For data we want to insert into our table we can use:
 ```sql
 INSERT INTO name VALUES(a,b,..);
 ```
+<p align="right">(<a href="#pl/sql-trainning">back to top</a>)</p>
+
 
 ### Naming columns
 - aliases and space between words
 ```sql
 SELECT imie || ' ' || nazwisko AS "dane klienta" FROM klienci;
 ```
+
+<p align="right">(<a href="#pl/sql-trainning">back to top</a>)</p>
 
 ### Filtering operators
 - ALL
@@ -102,6 +116,7 @@ WHERE EXISTS (SELECT * FROM purchases WHERE purchases.customer_id = customers.cu
 AND customer_name LIKE 'J%'
 AND NOT customer_name LIKE '%Test%';
 ```
+<p align="right">(<a href="#pl/sql-trainning">back to top</a>)</p>
 
 ### Group by
 
@@ -116,10 +131,16 @@ JOIN specjalnosc ON pracownicy.id_spec = specjalnosc.id_spec
 GROUP BY nazwa
 ```
 
+<p align="right">(<a href="#pl/sql-trainning">back to top</a>)</p>
+
 ### Where
 
 **You always use it before GROUP BY**
 
+<p align="right">(<a href="#pl/sql-trainning">back to top</a>)</p>
+
 ### Having
 
 **You always use it after GROUP BY or aggregation functions**
+
+<p align="right">(<a href="#pl/sql-trainning">back to top</a>)</p>
