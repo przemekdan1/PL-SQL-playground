@@ -265,7 +265,53 @@ Usage:
 
 ## Cursors
 
+Only way to iterafe through multiple results from sql query when we want them in PL/SQL programme
+
+```sql 
+CURSOR cursor_name
+    (param_name param_type) IS
+    SQL query;
+```
+
+```sql
+CURSOR nazwiska_ksiazka 
+    (p_nazwisko czytelnik.nazwisko%TYPE) IS
+        SELECT DISTINCT nazwisko FROM ksiazka
+        JOIN wypozyczenia USING(id_ks)
+        JOIN czytelnik USING(id_czyt)
+        WHERE tytul = 'KORDIAN'
+        ORDER BY tytul;
+```
+
 ### Iterating through cursor
+
+- with loop
+
+Opening cursor -> creating loop -> fetching into varaible -> exit condition -> ending loop -> closing cursor
+```sql
+    OPEN samochod1;
+    LOOP
+        FETCH samochod1 INTO sam;
+        EXIT WHEN samochod1%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE(to_char(sam.id_samochodu) || ' ' || sam.marka || ' ' || to_char(sam.cena));
+    END LOOP;
+    CLOSE samochod1;
+```
+
+- with for
+
+much more easierm dont have to worry about closing cursor
+```sql
+FOR iterator IN cursor
+LOOP
+    iterator_reference
+END LOOP;
+```
+```sql
+    FOR sam IN samochod('Opel') LOOP
+        dbms_output.put_line(to_char(samochod%ROWCOUNT)|| '. ' || to_char(sam.id_samochodu) ||' ' || sam.marka || ' ' || to_char(sam.cena));
+    END LOOP;
+```
 
 ### WHERE CURRENT OF
 
@@ -374,7 +420,7 @@ END;
 They do some calculation and return values 
 ```sql
 CREATE OR REPLACE FUNCTION function_name
-[params type DEFAULT NULL] RETURN return_value_type IS
+[params type DEFAULT NULL, param2, ...] RETURN return_value_type IS
     declaration
 BEGIN
     content
@@ -451,6 +497,12 @@ or, in query
 SELECT laczna_cena_po_gatunku(3) FROM ksiazka
 ```
 
+
+
+
+
+
+
 ### Packages
 
 They are some kind of libraries of procedures and function. Package is devided into specification and body part. 
@@ -478,6 +530,12 @@ END;
 ```
 
 ```sql
+CREATE OR REPLACE PACKAGE sadowe_informacje IS
+    FUNCTION rozprawy_sala (p_sala sala.nazwa%TYPE DEFAULT NULL) RETURN NUMBER;
+    PROCEDURE informacje_pozwany;
+END sadowe_informacje;
+
+
 CREATE OR REPLACE PACKAGE BODY sadowe_informacje IS
     FUNCTION rozprawy_sala
         (p_sala sala.nazwa%TYPE DEFAULT NULL) 
@@ -520,11 +578,6 @@ CREATE OR REPLACE PACKAGE BODY sadowe_informacje IS
         CLOSE informacje;
     END informacje_pozwany;
 END sadowe_informacje;
-
-BEGIN
-    sadowa_informacje.rozprawa_sala('F02');
-    sadowa_informacje
-END;
 
 
 DECLARE
