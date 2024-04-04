@@ -44,6 +44,7 @@ In my training I used Oracle SQLdeveloper.
         <a href="#cursors">Cursors</a>
         <ul>
           <li><a href="#iterating-through-cursor">Iterating through cursor</a></li>
+          <li><a href="#cursor-atributes">Cursor atributes</a></li>
           <li><a href="#where-current-of">WHERE CURRENT OF</a></li>
         </ul>
         <li><a href="#exceptions">Exceptions</a></li>
@@ -199,6 +200,23 @@ if you want your variable to have exact type as field in the table
 variable_name table.field_name%TYPE;
 ```
 
+You can use row type with cursor:
+```sql
+DECLARE
+    r_autor autor%ROWTYPE;
+    CURSOR c_autorzy IS
+    SELECT * FROM autor;
+BEGIN
+    OPEN c_autorzy;
+    LOOP
+        FETCH c_autorzy INTO r_autor;
+        EXIT WHEN c_autorzy%NOTFOUND;
+        dbms_output.put_line(r_autor.imie || ' ' || r_autor.nazwisko || ' ' || r_autor.kraj);
+    END LOOP;
+    CLOSE c_autorzy;
+END;
+``` 
+
 ### Record type
 
 Variable that contains many diffrent type values. Fields are separated with comas, at the bottom we have to declare a object witch is this record type object
@@ -263,11 +281,27 @@ Usage:
 
 ### RETURNING INTO
 
+It saves values from record i database that have been modify in previous command such as INSERT INTO, UPDATE
+Just normal command and then
+```sql
+RETURNING column_name_from_table INTO variable
+``` 
+```sql
+DECLARE
+    v_nazwisko pracownicy.nazwisko%TYPE;
 
+BEGIN
+    INSERT INTO pracownicy VALUES (11, 'Zieba', 'Weronika') 
+    RETURNING nazwisko INTO v_nazwisko;
+
+    DBMS_OUTPUT.PUT_LINE('Nazwisko nowego pracownika: ' || v_nazwisko);
+END;
+```
 
 ## Cursors
 
 Only way to iterafe through multiple results from sql query when we want them in PL/SQL programme
+
 
 ```sql 
 CURSOR cursor_name
@@ -315,7 +349,29 @@ END LOOP;
     END LOOP;
 ```
 
+### Cursor atributes
+Optrions refering to explicit cursors, you can find some informations about current state of cursor such as:
+- is current cursor record found **%FOUND** or **%NOTFOUND**
+- is cursor open? **%ISOPEN** 
+- how many records have been downloaded? 0 before first **%ROWCOUNT**
+```sql
+LOOP
+    EXIT WHEN aktualne_wypozyczenia%NOTFOUND OR aktualne_wypozyczenia%ROWCOUNT > 3;
+END LOOP;
+```
+
 ### WHERE CURRENT OF
+
+It allows you to modify or delete current cursor record. First cursor mus be declared with FOR UPDATE in the end of declaration and then used during UPDATE seletion
+
+```sql
+CURSOR cursor_name IS
+    SELECT * FROM car FOR UPDATE;
+BEGIN
+    ...
+    UPDATE car SET price = price + 1 WHERE CURRENT OF cursor_name;
+END;
+```
 
 
 
