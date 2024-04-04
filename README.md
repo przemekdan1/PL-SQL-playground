@@ -173,8 +173,18 @@ GROUP BY nazwa
 <p align="right">(<a href="#pl/sql-trainning">back to top</a>)</p>
 
 
+### FETCH
 
+Selecting how many rows from query you want
 
+only first
+```sql
+FETCH FIRST ROW ONLY
+```
+three rows
+```sql
+FETCH FIRST 3 ROW ONLY
+```
 
 
 
@@ -376,6 +386,36 @@ END;
 
 
 ## Exceptions
+
+Hadling errors with messages or other actions, in some cases user can RAISE his own exceptions declared in declaration block, printing message or raise error. 
+
+```sql
+DECLARE
+    exception1 EXCEPTION;
+BEGIN
+    IF sth THEN
+        RAISE exception1;
+    END IF;
+EXCEPTION
+    WHEN no_data_found THEN
+        DBMS_OUTPUT.PUT_LINE('Nie ma takiej marki posrod samochodow.');
+    WHEN too_many_rows THEN
+        RAISE_APPLICATION_ERROR(-20001,'Jest wiecej niz 1 samochod takiej marki.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('To jakis inny wyjatek.');
+```
+
+
+| Nazwa wyjątku       | Opis wyjątku                                                                   |
+|---------------------|--------------------------------------------------------------------------------|
+| CASE_NOT_FOUND      | nie znaleziono pasującego WHEN dla CASE                                        |
+| CURSOR_ALREADY_OPEN | próba otwarcia otwartego kursora                                               |
+| DUP_VALUE_ON_INDEX  | powielenie wartości w atrybucie ograniczonym kluczem podstawowym lub unikalnym |
+| INVALID_CURSOR      | wykonanie zabronionej operacji na kursorze                                     |
+| NO_DATA_FOUND       | polecenie SELECT INTO nie zwróciło żadnego rekordu                             |
+| TOO_MANY_ROWS       | polecenie SELECT INTO zwróciło więcej niż 1 rekord                             |
+| VALUE_ERROR         | błąd wykonania operacji arytmetycznej, konwersji lub rozmiaru typu             |
+| ZERO_DIVIDE         | dzielenie przez zero                                                           |
 
 
 ## Sequences
