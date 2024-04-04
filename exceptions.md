@@ -57,31 +57,4 @@ END;
 - FETCH FIRST 1 ROW ONLY
 
 
-## Program 3
-
-
-**Napisz program, który wyświetli imię, nazwisko czytelnika, dzień i miesiąc z daty wypożyczenia (miesiąc w postaci pełnej nazwy miesiąca) oraz tytuł książki i jej format, np.:Jan Nowak 04 DECEMBERpan Tadeusz ebook**
-
-
-```sql
-
-```
-
-### What was used:
--
-
-
-## Program 3
-
-
-**Napisz program, który wyświetli imię, nazwisko czytelnika, dzień i miesiąc z daty wypożyczenia (miesiąc w postaci pełnej nazwy miesiąca) oraz tytuł książki i jej format, np.:Jan Nowak 04 DECEMBERpan Tadeusz ebook**
-
-
-```sql
-
-```
-
-### What was used:
--
-
 

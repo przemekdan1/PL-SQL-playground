@@ -285,9 +285,38 @@ Usage:
 
 ## PL/SQL modifing and assiging data
 
-### SELECT INTO, INSERT INTO
+### SELECT INTO
 
-### UPDATE, DELETE
+### UPDATE, DELETE, INSERT INTO
+
+```sql
+UPDATE table_name SET column_name = ' ' WHERE condition
+```
+
+```sql
+DELETE FROM table_name WHERE condition
+```
+```sql
+INSERT INTO table_name VALUES(like columns);
+```
+example
+
+```sql
+INSERT INTO autor
+VALUES(16,'Remigiusz','Mróz','Polska');
+
+UPDATE autor
+SET imie = 'Remigiusz'
+WHERE imie = 'Mróz';
+
+UPDATE autor
+SET nazwisko = 'Mróz'
+WHERE nazwisko = 'Remigiusz';
+
+DELETE FROM autor 
+WHERE id_aut = 16;
+
+```
 
 ### RETURNING INTO
 
@@ -420,7 +449,24 @@ EXCEPTION
 
 ## Sequences
 
+Used for easly creating indexes logs. Incremented before calling
+It have record CURRVAL and NEXTVAL
 
+```sql 
+CREATE SEQUENCE sequence_name
+START WITH 1
+INCREMENT BY 1
+MAXVALUE 1000;
+```
+
+```sql
+SELECT numeracja.NEXTVAL FROM dual;
+SELECT numeracja.CURRVAL FROM dual;
+```
+
+```sql
+INSERT INTO klienci_log VALUES(numeracja.NEXTVAL, SYSDATE);
+```
 
 
 ## Stored procedures
@@ -691,9 +737,52 @@ END;
 
 ## Triggers
 
+Called when some event in database occur (modifing deleting inserting data) Running BEFORE AFTER INSTEAD OF
+
+```sql
+CREATE OR REPLACE TRIGGER trigger_name
+    when, wich action
+    ON table name
+    FOR EACH ROW
+DECLARE
+
+BEGIN
+
+END;
+```
 
 
+Can be used for every record once - **table trigger**
+```sql
+CREATE OR REPLACE TRIGGER wstaw_id_samochodu
+BEFORE INSERT ON samochody
+FOR EACH ROW
+BEGIN
+    IF :NEW.id_samochodu IS NULL THEN
+        SELECT primary_key_samochody.NEXTVAL INTO :NEW.id_samochodu FROM DUAL;
+    END IF;
+END;
+```
 
+Can be used for specific action (FOR EACH ROW) - **command trigger**
+```sql
+CREATE OR REPLACE TRIGGER zapisz_date_wstawienia_rekordu
+    AFTER INSERT ON klienci_log
+BEGIN
+I   NSERT INTO logi(data_wstawienia, tabela, operacja) VALUES(SYSDATE, 'KLIENCI_LOG', 'INSERT');
+END;
+```
+
+References to previous and new values during the command
+
+|        | :OLD                      | :NEW                   |
+|--------|---------------------------|------------------------|
+| INSERT | wartość pusta             | wartość wstawiona      |
+| UPDATE | wartość przed modyfikacją | wartość po modyfikacji |
+| DELETE | wartość usuwana           | wartość pusta          |
+```sql
+
+```
 
 DECLARE
     CURSOR liczba_rozpraw (p_spec specjalnosc.nazwa%TYPE) IS
