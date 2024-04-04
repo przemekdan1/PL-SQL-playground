@@ -29,7 +29,7 @@ In my training I used Oracle SQLdeveloper.
       <ul>
         <li><a href="#anonymous-blocks">Anonymous blocks</a></li>
         <li><a href="#type-and-rowtype">TYPE and ROWTYPE</a></li>
-        <li><a href="#record-variable">Record variable</a></li>
+        <li><a href="#record-type">Record type</a></li>
         <li><a href="#if-statement-case">If statement, case</a></li>
         <li><a href="#loops">Loops</a></li>
     </ul>
@@ -199,7 +199,9 @@ if you want your variable to have exact type as field in the table
 variable_name table.field_name%TYPE;
 ```
 
-### Record variable
+### Record type
+
+Variable that contains many diffrent type values. Fields are separated with comas, at the bottom we have to declare a object witch is this record type object
 
 ```sql
 TYPE record_type_name IS RECORD (
@@ -596,6 +598,267 @@ END;
 
 
 
+
+DECLARE
+    CURSOR liczba_rozpraw (p_spec specjalnosc.nazwa%TYPE) IS
+        SELECT imie,nazwisko,COUNT(id_rozprawa) AS "LICZBA" FROM pracownicy
+        JOIN rozprawa ON pracownicy.id_prac = rozprawa.id_prac
+        JOIN specjalnosc ON pracownicy.id_spec = specjalnosc.id_spec
+        WHERE nazwa = p_spec
+        GROUP BY nazwa;
+        
+    v_imie pozwany.imie%TYPE;   
+    v_nazwisko pozwany.nazwisko%TYPE;
+    v_liczba_rozpraw NUMBER;
+BEGIN
+    FOR spec IN ('ADWOKAT', 'SEDZIA', 'PROKURATOR', 'OBRONCA')
+    LOOP
+        DBMS_OUTPUT.PUT_LINE('Specjalność: ' || spec);
+        OPEN liczba_rozpraw(spec);
+        FETCH liczba_rozpraw INTO v_imie, v_nazwisko, v_liczba_rozpraw;
+        IF liczba_rozpraw%FOUND THEN
+            DBMS_OUTPUT.PUT_LINE('Imię: ' || v_imie || ', Nazwisko: ' || v_nazwisko || ', Liczba rozpraw: ' || v_liczba_rozpraw);
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Brak danych dla specjalności: ' || spec);
+        END IF;
+        CLOSE liczba_rozpraw;
+    END LOOP;
+EXCEPTION
+    WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('Brak danych dla specjalności: ' || spec);
+END;
+
+DECLARE
+    v_spec specjalnosc.nazwa%TYPE := '&nazwa';
+    CURSOR rozprawy(v_nazwa specjalnosc.nazwa%TYPE) IS 
+    SELECT s.nazwa AS nazwa_spec, COUNT(r.id_rozprawa) AS liczba_rozpraw FROM specjalnosc s
+    JOIN pracownicy p ON p.id_spec = s.id_spec
+    JOIN rozprawa r ON r.id_prac = p.id_prac
+    WHERE s.nazwa = 'ADWOKAT'
+    GROUP BY s.nazwa;
+    za_duzo_rozpraw EXCEPTION;
+BEGIN
+    FOR i IN rozprawy(v_spec) LOOP
+        IF i.liczba_rozpraw > 3 THEN
+            RAISE za_duzo_rozpraw;
+        END IF;
+        DBMS_OUTPUT.PUT_LINE(i.nazwa_spec || ' ' || i.liczba_rozpraw);
+    END LOOP;
+    
+EXCEPTION
+    WHEN no_data_found THEN
+        DBMS_OUTPUT.PUT_LINE('Pracownik nie mial zadnej rozprawy.');
+    WHEN za_duzo_rozpraw THEN
+        DBMS_OUTPUT.PUT_LINE('Pracownik mial wiecej niz 3 rozprawy.');
+END;
+
+
+
+        SELECT nazwisko,id_rozprawa,nazwa FROM pracownicy
+        JOIN rozprawa ON pracownicy.id_prac = rozprawa.id_prac
+        JOIN specjalnosc ON pracownicy.id_spec = specjalnosc.id_spec
+        ORDER BY nazwisko
+
+        SELECT nazwisko,nazwa,COUNT(id_rozprawa) AS "LICZBA" FROM pracownicy
+        JOIN rozprawa ON pracownicy.id_prac = rozprawa.id_prac
+        JOIN specjalnosc ON pracownicy.id_spec = specjalnosc.id_spec
+        GROUP BY nazwisko,nazwa
+        
+        SELECT nazwisko FROM pracownicy
+
+
+
+
+DECLARE
+    TYPE oskarzony IS RECORD (
+        v_imie pozwany.imie%TYPE,
+        v_nazwisko pozwany.nazwisko%TYPE,
+        v_liczba_rozpraw NUMBER
+    );
+    osk oskarzony;
+BEGIN
+    SELECT imie,nazwisko,COUNT(id_rozprawa) AS "LICZBA_ROZPRAW" INTO osk FROM pozwany
+    JOIN rozprawa USING(id_poz)
+    HAVING COUNT(id_rozprawa) = (
+            SELECT COUNT(id_rozprawa) FROM pozwany
+            JOIN rozprawa USING(id_poz)
+            GROUP BY imie,nazwisko
+            ORDER BY COUNT(id_rozprawa) DESC
+            FETCH FIRST ROW ONLY
+        )
+    GROUP BY imie,nazwisko;
+    
+    DBMS_OUTPUT.PUT_LINE(osk.v_imie || ' ' || osk.v_nazwisko || ' ' || osk.v_liczba_rozpraw);
+    
+EXCEPTION 
+    WHEN too_many_rows  THEN
+        DBMS_OUTPUT.PUT_LINE('Too many rows');
+
+END;
+
+    SELECT p.nazwisko, p.imie, COUNT(r.id_rozprawa) FROM pozwany p
+    JOIN rozprawa r ON r.id_poz = p.id_poz
+    HAVING COUNT(r.id_rozprawa) IN (
+                                SELECT MAX(COUNT(id_rozprawa)) FROM rozprawa 
+                                GROUP BY id_poz
+                                )
+    GROUP BY p.nazwisko, p.imie
+
+
+
+
+    SELECT imie,nazwisko,COUNT(id_rozprawa) AS "LICZBA_ROZPRAW" FROM pozwany
+    JOIN rozprawa USING(id_poz)
+    HAVING COUNT(id_rozprawa) = (
+            SELECT COUNT(id_rozprawa) FROM pozwany
+            JOIN rozprawa USING(id_poz)
+            GROUP BY imie,nazwisko
+            ORDER BY COUNT(id_rozprawa) DESC
+            FETCH FIRST ROW ONLY
+        )
+    GROUP BY imie,nazwisko
+
+v_nazwisko_poz,v_imie_poz, v_imie_prac, v_typ_sprawy 
+
+
+CREATE OR REPLACE PACKAGE sadowe_informacje IS
+    FUNCTION rozprawy_sala (p_sala sala.nazwa%TYPE DEFAULT NULL) RETURN NUMBER;
+    PROCEDURE informacje_pozwany;
+END sadowe_informacje;
+
+CREATE OR REPLACE PACKAGE BODY sadowe_informacje IS
+    FUNCTION rozprawy_sala
+        (p_sala sala.nazwa%TYPE DEFAULT NULL) 
+        RETURN NUMBER IS
+        v_liczba_rozpraw NUMBER;
+        v_nazwa_sali sala.nazwa%TYPE;
+    BEGIN
+        IF p_sala IS NULL THEN
+            DBMS_OUTPUT.PUT_LINE('Brak podanego parametru');
+        ELSE
+            SELECT nazwa,COUNT(id_rozprawa) INTO v_nazwa_sali, v_liczba_rozpraw FROM sala
+            JOIN rozprawa USING(id_sala)
+            WHERE nazwa = p_sala
+            GROUP BY nazwa;
+        END IF;
+        RETURN v_liczba_rozpraw;
+    END rozprawy_sala;
+
+    PROCEDURE informacje_pozwany IS
+        CURSOR informacje IS
+            SELECT pozwany.nazwisko,pozwany.imie,pracownicy.imie,typ_sprawy.nazwa FROM rozprawa
+            JOIN pozwany USING(id_poz)
+            JOIN pracownicy USING(id_prac)
+            JOIN typ_sprawy USING(id_typ);
+    
+        TYPE dane IS RECORD(
+            v_nazwisko_poz pozwany.nazwisko%TYPE,
+            v_imie_poz pozwany.imie%TYPE,
+            v_imie_prac pracownicy.imie%TYPE,
+            v_typ_sprawy typ_sprawy.nazwa%TYPE
+        );
+        dane_pozwanego dane;
+    BEGIN
+        OPEN informacje;
+        LOOP
+            FETCH informacje INTO dane_pozwanego;
+            EXIT WHEN informacje%NOTFOUND;
+            DBMS_OUTPUT.PUT_LINE(dane_pozwanego.v_nazwisko_poz || ' ' || dane_pozwanego.v_imie_poz || ' ' ||  dane_pozwanego.v_imie_prac || ' ' || dane_pozwanego.v_typ_sprawy);
+        END LOOP;
+        CLOSE informacje;
+    END informacje_pozwany;
+END sadowe_informacje;
+
+BEGIN
+    sadowa_informacje.rozprawa_sala('F02');
+    sadowa_informacje
+END;
+
+
+DECLARE
+    v_liczba_rozpraw NUMBER(4);
+    nazwa_sali sala.nazwa%TYPE := '&nazwa_sali';
+BEGIN
+    v_liczba_rozpraw := sadowe_informacje.rozprawy_sala(nazwa_sali);
+    DBMS_OUTPUT.PUT_LINE('Liczba rozpraw, ktora odbyla sie w sali ' || nazwa_sali || ' wynosi: ' || v_liczba_rozpraw);
+    
+    sadowe_informacje.informacje_pozwany;
+END;
+
+
+EXECUTE informacje_pozwany;
+
+
+
+
+
+
+CREATE OR REPLACE PACKAGE biblioteka_info IS
+    FUNCTION autor_format
+        (p_nazwisko autor.nazwisko%TYPE DEFAULT NULL,
+        p_imie autor.imie%TYPE DEFAULT NULL)
+        RETURN NUMBER;
+    PROCEDURE wydawnictwo_info;
+END biblioteka_info;
+
+CREATE OR REPLACE PACKAGE BODY biblioteka_info IS
+
+    FUNCTION autor_format
+        (p_nazwisko autor.nazwisko%TYPE DEFAULT NULL,
+        p_imie autor.imie%TYPE DEFAULT NULL)
+        RETURN NUMBER IS
+        v_liczba_formatow NUMBER;
+    BEGIN
+        IF p_nazwisko IS NOT NULL AND p_imie IS NOT NULL THEN
+            SELECT DISTINCT COUNT(id_for) INTO v_liczba_formatow FROM autor
+            JOIN autor_tytul USING(id_aut)
+            JOIN ksiazka USING(id_ks)
+            JOIN format USING(id_for)
+            WHERE nazwisko = p_nazwisko AND imie = p_imie
+            GROUP BY nazwisko,imie;
+        END IF;
+        RETURN v_liczba_formatow;
+    EXCEPTION 
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(-20001,'Nie istnieje taki autor');
+    END autor_format;
+
+    PROCEDURE wydawnictwo_info IS
+        CURSOR nazwiska_ksiazka 
+        (p_tytul ksiazka.tytul%TYPE) IS
+            SELECT DISTINCT nazwisko FROM ksiazka
+            JOIN wypozyczenia USING(id_ks)
+            JOIN czytelnik USING(id_czyt)
+            WHERE tytul = p_tytul
+            ORDER BY tytul;
+            
+        CURSOR ksiazki_wydawnictwa IS
+            SELECT tytul FROM wydawnictwo
+            JOIN ksiazka USING(id_wyd)
+            WHERE w_nazwa = (
+                SELECT w_nazwa FROM wydawnictwo
+                JOIN ksiazka USING(id_wyd)      
+                GROUP BY w_nazwa
+                ORDER BY COUNT(id_ks)
+                FETCH FIRST ROW ONLY
+                );
+    BEGIN
+        FOR tytul_ksiazki IN ksiazki_wydawnictwa 
+        LOOP
+            DBMS_OUTPUT.PUT_LINE(tytul_ksiazki.tytul);
+            FOR nazwiska_wypozyczenia IN nazwiska_ksiazka(tytul_ksiazki.tytul)
+            LOOP
+                DBMS_OUTPUT.PUT_LINE(nazwiska_wypozyczenia.nazwisko);
+            END LOOP;
+        END LOOP;
+    END wydawnictwo_info;
+END biblioteka_info;
+    
+SELECT biblioteka_info.autor_format('Goethe', 'Anna') FROM dual;
+EXECUTE biblioteka_info.wydawnictwo_info;
+
+BEGIN 
+    biblioteka_info.autor_format('Goethe', 'Anna');
 
 
 
