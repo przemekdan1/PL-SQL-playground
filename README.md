@@ -374,13 +374,57 @@ END;
 They do some calculation and return values 
 ```sql
 CREATE OR REPLACE FUNCTION function_name
-[params] RETURN return_value_type IS
+[params type DEFAULT NULL] RETURN return_value_type IS
     declaration
 BEGIN
     content
     RETURN sth;
 END function_name;
 ```
+
+```sql
+CREATE OR REPLACE FUNCTION brutto_na_netto
+
+(p_id_ksiazki ksiazka.id_ks%TYPE DEFAULT NULL)
+
+    RETURN ksiazka.cena%TYPE IS
+
+    v_cena_netto ksiazka.cena%TYPE;
+
+    v_cena_brutto ksiazka.cena%TYPE;
+
+BEGIN
+
+    SELECT ksiazka.cena INTO v_cena_brutto FROM ksiazka
+
+    WHERE ksiazka.id_ks = p_id_ksiazki;
+
+    
+
+    IF v_cena_brutto IS NOT NULL THEN
+
+        v_cena_netto := v_cena_brutto/1.08;
+
+    END IF;
+
+    RETURN v_cena_netto;
+
+    
+
+    EXCEPTION
+
+    WHEN no_data_found THEN
+
+        RAISE_APPLICATION_ERROR(-20001, 'Nie istnieje takie ID ksiazki.');
+
+    WHEN too_many_rows THEN
+
+        RAISE_APPLICATION_ERROR(-20002, 'Ksiazka ma wiele autorow.');
+
+END brutto_na_netto;
+```
+
+
 
 To invoke function you have to create proper variable in programe for result  value
 ```sql
@@ -409,8 +453,90 @@ SELECT laczna_cena_po_gatunku(3) FROM ksiazka
 
 ### Packages
 
-They are some kind of libraries of procedures and function
+They are some kind of libraries of procedures and function. Package is devided into specification and body part. 
+- In **specification**, we declare functions and procedures used in this package and constants, variables.
+- In **body**, whe have definitions of those declared elements. Also it contain cursors, variables inside package, hidden for user
 
+```sql
+CREATE OR REPLACE PACKAGE package_name IS
+    variables, cursors, exception declarations for users
+    procedures, functions declaration for users
+END package_name;
+
+CREATE OR REPLACE PACKAGE BODY package_name IS
+    variables, cursors, exception declarations for insie programs
+    procedures, functions declaration for insie programs
+END package_name;
+```
+
+How to call function/procedure form package?
+```sql
+BEGIN
+    samochod.sprawdz_samochod(3);
+    SELECT samochod.liczba_samochodow('Opel') FROM samochody;
+END;
+```
+
+```sql
+CREATE OR REPLACE PACKAGE BODY sadowe_informacje IS
+    FUNCTION rozprawy_sala
+        (p_sala sala.nazwa%TYPE DEFAULT NULL) 
+        RETURN NUMBER IS
+        v_liczba_rozpraw NUMBER;
+        v_nazwa_sali sala.nazwa%TYPE;
+    BEGIN
+        IF p_sala IS NULL THEN
+            DBMS_OUTPUT.PUT_LINE('Brak podanego parametru');
+        ELSE
+            SELECT nazwa,COUNT(id_rozprawa) INTO v_nazwa_sali, v_liczba_rozpraw FROM sala
+            JOIN rozprawa USING(id_sala)
+            WHERE nazwa = p_sala
+            GROUP BY nazwa;
+        END IF;
+        RETURN v_liczba_rozpraw;
+    END rozprawy_sala;
+
+    PROCEDURE informacje_pozwany IS
+        CURSOR informacje IS
+            SELECT pozwany.nazwisko,pozwany.imie,pracownicy.imie,typ_sprawy.nazwa FROM rozprawa
+            JOIN pozwany USING(id_poz)
+            JOIN pracownicy USING(id_prac)
+            JOIN typ_sprawy USING(id_typ);
+    
+        TYPE dane IS RECORD(
+            v_nazwisko_poz pozwany.nazwisko%TYPE,
+            v_imie_poz pozwany.imie%TYPE,
+            v_imie_prac pracownicy.imie%TYPE,
+            v_typ_sprawy typ_sprawy.nazwa%TYPE
+        );
+        dane_pozwanego dane;
+    BEGIN
+        OPEN informacje;
+        LOOP
+            FETCH informacje INTO dane_pozwanego;
+            EXIT WHEN informacje%NOTFOUND;
+            DBMS_OUTPUT.PUT_LINE(dane_pozwanego.v_nazwisko_poz || ' ' || dane_pozwanego.v_imie_poz || ' ' ||  dane_pozwanego.v_imie_prac || ' ' || dane_pozwanego.v_typ_sprawy);
+        END LOOP;
+        CLOSE informacje;
+    END informacje_pozwany;
+END sadowe_informacje;
+
+BEGIN
+    sadowa_informacje.rozprawa_sala('F02');
+    sadowa_informacje
+END;
+
+
+DECLARE
+    v_liczba_rozpraw NUMBER(4);
+    nazwa_sali sala.nazwa%TYPE := '&nazwa_sali';
+BEGIN
+    v_liczba_rozpraw := sadowe_informacje.rozprawy_sala(nazwa_sali);
+    DBMS_OUTPUT.PUT_LINE('Liczba rozpraw, ktora odbyla sie w sali ' || nazwa_sali || ' wynosi: ' || v_liczba_rozpraw);
+    
+    sadowe_informacje.informacje_pozwany;
+END;
+```
 
 ## Triggers
 
