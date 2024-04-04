@@ -372,8 +372,40 @@ END;
 ### Functions
 
 They do some calculation and return values 
+```sql
+CREATE OR REPLACE FUNCTION function_name
+[params] RETURN return_value_type IS
+    declaration
+BEGIN
+    content
+    RETURN sth;
+END function_name;
+```
 
+To invoke function you have to create proper variable in programe for result  value
+```sql
+DECLARE
 
+    id_ksiazki ksiazka.id_ks%TYPE := &id_ksiazki;
+
+    v_cena_netto ksiazka.cena%TYPE;
+
+BEGIN
+
+    IF id_ksiazki IS NOT NULL THEN
+
+        v_cena_netto := brutto_na_netto(id_ksiazki);
+
+        DBMS_OUTPUT.PUT_LINE('ID KSIAZKI: ' || id_ksiazki || ' CENA NETTO: ' || v_cena_netto);
+
+    END IF;
+
+END;
+```
+or, in query
+```sql
+SELECT laczna_cena_po_gatunku(3) FROM ksiazka
+```
 
 ### Packages
 
